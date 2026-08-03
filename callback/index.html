@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Authorization complete — copy your code</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+         line-height: 1.55; max-width: 40rem; margin: 0 auto;
+         padding: 2rem 1.1rem 4rem; }
+  h1 { font-size: 1.35rem; margin-bottom: .2rem; }
+  .sub { color: #6b6b6b; margin-top: 0; font-size: .95rem; }
+  #box { width: 100%; min-height: 8.5rem; font-family: ui-monospace, SFMono-Regular,
+         Menlo, monospace; font-size: .78rem; word-break: break-all; padding: .7rem;
+         border: 1px solid #b9b9b9; border-radius: 8px; box-sizing: border-box;
+         background: canvas; color: canvastext; }
+  button { font-size: 1rem; padding: .65rem 1.1rem; border-radius: 8px;
+           border: 1px solid #2b6cb0; background: #2b6cb0; color: #fff;
+           cursor: pointer; margin-top: .7rem; }
+  button:active { opacity: .8; }
+  .ok  { color: #1a7f37; font-weight: 600; }
+  .err { color: #b42318; font-weight: 600; }
+  .note { font-size: .88rem; color: #6b6b6b; margin-top: 1.6rem; }
+  ol { padding-left: 1.15rem; }
+</style>
+</head>
+<body>
+
+<h1 id="head">Authorization complete</h1>
+<p class="sub" id="sub">Copy the text below and paste it back into the terminal.</p>
+
+<textarea id="box" readonly spellcheck="false"></textarea>
+<button id="copy" type="button">Copy to clipboard</button>
+<span id="status"></span>
+
+<div class="note">
+  <p><strong>What to do next</strong></p>
+  <ol>
+    <li>Tap <em>Copy to clipboard</em> (or select the text and copy it).</li>
+    <li>Send it to yourself however is convenient, and paste it where you were asked for the callback URL.</li>
+  </ol>
+  <p>This page runs entirely in your browser. The value below is not sent
+     anywhere by this page &mdash; there are no scripts, trackers, or network
+     requests other than loading this page itself. The authorization code is
+     single&#8209;use and expires within a few minutes.</p>
+</div>
+
+<script>
+(function () {
+  var box = document.getElementById('box');
+  var status = document.getElementById('status');
+  var head = document.getElementById('head');
+  var sub = document.getElementById('sub');
+
+  var full = window.location.href;
+  var qs = window.location.search || '';
+  var params = new URLSearchParams(qs);
+
+  if (params.get('error')) {
+    head.textContent = 'Authorization failed';
+    head.className = 'err';
+    sub.textContent = params.get('error_description') || params.get('error');
+    box.value = full;
+  } else if (!params.get('code')) {
+    head.textContent = 'No authorization code found';
+    head.className = 'err';
+    sub.textContent = 'This page expects to be reached by redirect after approving access.';
+    box.value = full;
+  } else {
+    box.value = full;
+  }
+
+  document.getElementById('copy').addEventListener('click', function () {
+    box.select();
+    box.setSelectionRange(0, box.value.length);
+    var done = function (ok) {
+      status.textContent = ok ? '  ✓ copied' : '  select the text and copy manually';
+      status.className = ok ? 'ok' : 'err';
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(box.value).then(function () { done(true); },
+                                                    function () { done(false); });
+    } else {
+      try { done(document.execCommand('copy')); } catch (e) { done(false); }
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
